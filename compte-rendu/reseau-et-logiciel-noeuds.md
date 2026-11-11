@@ -34,6 +34,10 @@ flowchart LR
 
 ## Ce que le POC a montré (Galaxy A5 2016, Android 7.0)
 
+![Prototype en marche](capture-poc.png)
+
+*Prototype en marche, 10 novembre 2026 (version Termux). À gauche, le tableau de bord du cluster sur le PC (1 téléphone en ligne sur 1). À droite, la page du nœud `a5-01` : batterie, température, uptime et charge CPU.*
+
 - **Vérifié** : une application dédiée sert Flask et Django en HTTP et HTTPS, sans root, derrière le PC. Elle tient environ 40 requêtes par seconde (une seule mesure) et utilise environ 86 Mo de mémoire.
 - **À valider** : stabilité écran éteint et après un reboot, comparaison avec Termux, plusieurs téléphones par hôte.
 
