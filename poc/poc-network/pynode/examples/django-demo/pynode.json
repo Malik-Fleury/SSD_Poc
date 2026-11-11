@@ -1,0 +1,3 @@
+{
+  "app": "mysite.wsgi:application"
+}

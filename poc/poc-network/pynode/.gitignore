@@ -1,0 +1,8 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+__pycache__/
+# copie générée de ../phone/index.html (voir app/build.gradle.kts)
+app/src/main/python/pynode/index.html

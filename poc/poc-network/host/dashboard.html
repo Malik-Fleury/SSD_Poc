@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cluster</title>
+<style>
+:root{--bg:#0d0f12;--card:#16191e;--line:#262a31;--text:#e6e8eb;--dim:#8b929c;--ok:#3ddc84;--bad:#f0506e}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center}
+main{width:100%;max-width:460px;padding:2.5em 1em}
+h1{font-size:1.25em;font-weight:600;margin:0 0 .2em}
+.sub{color:var(--dim);font-size:.85em;margin-bottom:1.5em}
+.row{display:flex;align-items:center;gap:.8em;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:.9em 1em;margin-bottom:.6em}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.down .dot{background:var(--bad);box-shadow:0 0 10px var(--bad)}
+.down .name{color:var(--dim)}
+.name{font-weight:600}
+.addr{color:var(--dim);font-size:.8em;font-family:ui-monospace,monospace}
+.state{margin-left:auto;text-align:right;font-size:.8em;color:var(--dim)}
+.state b{display:block;font-size:1.1em;color:var(--ok)}
+.down .state b{color:var(--bad)}
+footer{color:var(--dim);font-size:.75em;text-align:center;margin-top:1.5em}
+</style></head><body>
+<main>
+  <h1>Cluster</h1>
+  <div class="sub" id="sum">…</div>
+  <div id="list"></div>
+  <footer id="foot">rafraîchi toutes les 2 s</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function dur(s){
+  const h=Math.floor(s/3600),m=Math.floor(s%3600/60);
+  return h?`${h} h ${m} min`:m?`${m} min ${s%60} s`:`${s} s`;
+}
+async function tick(){
+  try{
+    const list=await (await fetch("/status")).json();
+    const up=list.filter(p=>p.up).length;
+    $("sum").textContent=`${up} / ${list.length} téléphone${list.length>1?"s":""} en ligne`;
+    $("list").innerHTML=list.map(p=>`
+      <div class="row ${p.up?"":"down"}">
+        <span class="dot"></span>
+        <div><div class="name">${p.node??"inconnu"}</div><div class="addr">${p.backend}</div></div>
+        <div class="state"><b>${p.up?"UP":"DOWN"}</b>depuis ${dur(p.since_s)}</div>
+      </div>`).join("");
+    $("foot").textContent="mis à jour "+new Date().toLocaleTimeString("fr-CH");
+  }catch(e){
+    $("sum").textContent="tableau de bord injoignable";
+  }
+}
+tick();setInterval(tick,2000);
+</script>
+</body></html>

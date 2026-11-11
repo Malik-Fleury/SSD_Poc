@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nœud</title>
+<style>
+:root{--bg:#0d0f12;--card:#16191e;--line:#262a31;--text:#e6e8eb;--dim:#8b929c;--ok:#3ddc84;--warn:#f5a524;--bad:#f0506e}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center}
+main{width:100%;max-width:460px;padding:2.5em 1em}
+header{display:flex;align-items:center;gap:.7em;margin-bottom:1.5em}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);transition:.3s}
+.off .dot{background:var(--bad);box-shadow:0 0 10px var(--bad)}
+h1{font-size:1.25em;font-weight:600;margin:0;letter-spacing:.01em}
+header a{margin-left:auto;color:var(--dim);font-size:.8em;text-decoration:none;
+  border:1px solid var(--line);padding:.3em .7em;border-radius:6px}
+header a:hover{color:var(--text);border-color:var(--dim)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:.75em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1em}
+.card.wide{grid-column:span 2}
+.label{color:var(--dim);font-size:.75em;text-transform:uppercase;letter-spacing:.06em}
+.value{font-size:1.6em;font-weight:600;margin-top:.25em;font-variant-numeric:tabular-nums}
+.value small{font-size:.5em;color:var(--dim);font-weight:400;margin-left:.2em}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-top:.7em;overflow:hidden}
+.bar div{height:100%;width:0;background:var(--ok);border-radius:3px;transition:width .5s,background .5s}
+footer{color:var(--dim);font-size:.75em;text-align:center;margin-top:1.5em}
+</style></head><body>
+<main>
+  <header><span class="dot"></span><h1 id="node">…</h1><a href="/api">JSON</a></header>
+  <div class="grid">
+    <div class="card wide">
+      <div class="label">Batterie · <span id="status">–</span></div>
+      <div class="value" id="bat">–</div>
+      <div class="bar"><div id="batbar"></div></div>
+    </div>
+    <div class="card"><div class="label">Température</div><div class="value" id="temp">–</div></div>
+    <div class="card"><div class="label">Uptime</div><div class="value" id="up">–</div></div>
+    <div class="card wide"><div class="label">Charge CPU · 1 / 5 / 15 min</div><div class="value" id="load">–</div></div>
+  </div>
+  <footer id="foot">rafraîchi toutes les 2 s</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const unit=(v,u)=>v==null?"n/a":`${v}<small>${u}</small>`;
+function uptime(s){
+  const h=Math.floor(s/3600),m=Math.floor(s%3600/60);
+  return h?`${h}<small>h</small> ${m}<small>min</small>`:m?`${m}<small>min</small> ${s%60}<small>s</small>`:`${s}<small>s</small>`;
+}
+async function tick(){
+  try{
+    const d=await (await fetch("/api")).json();
+    document.body.classList.remove("off");
+    $("node").textContent=d.node;
+    $("status").textContent=d.battery_status??"–";
+    $("bat").innerHTML=unit(d.battery_pct,"%");
+    const p=d.battery_pct??0;
+    $("batbar").style.width=p+"%";
+    $("batbar").style.background=p<20?"var(--bad)":p<50?"var(--warn)":"var(--ok)";
+    $("temp").innerHTML=unit(d.battery_temp_c,"°C");
+    $("temp").style.color=d.battery_temp_c>40?"var(--bad)":d.battery_temp_c>35?"var(--warn)":"";
+    $("up").innerHTML=uptime(d.uptime_s);
+    $("load").textContent=d.loadavg?d.loadavg.join("  ·  "):"n/a";
+    $("foot").textContent="mis à jour "+new Date().toLocaleTimeString("fr-CH");
+  }catch(e){
+    document.body.classList.add("off");
+    $("foot").textContent="hors ligne";
+  }
+}
+tick();setInterval(tick,2000);
+</script>
+</body></html>
