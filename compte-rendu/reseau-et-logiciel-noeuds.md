@@ -2,9 +2,25 @@
 
 *Compte rendu du 11 novembre 2026*
 
-## En bref
+## Options réseau proposées
 
-Pour un premier prototype avec des téléphones de récupération, l'approche du POC est envisageable : **un hôte (vieux PC) relié aux téléphones en USB, avec une application Android dédiée sur l'Android d'origine**. Elle reste à valider par des mesures de longue durée et sur plusieurs téléphones.
+| Option | Avantages | Inconvénients |
+|---|---|---|
+| **Wi-Fi** | Coût nul, rien à câbler | Instable ; environ 20-30 appareils par point d'accès ; téléphones joignables par tout le réseau |
+| **Hôte + smartphones en USB** | Marche sur tout Android ; téléphones isolés derrière l'hôte | L'hôte est un point de défaillance ; nombre de téléphones limité par hôte |
+| **Interface LAN par téléphone** (adaptateur USB-Ethernet) | Switch standard, facile à agrandir, pas d'hôte intermédiaire | ⚠️ Compatibilité non vérifiée (OTG, pilote) ; environ 20-30 CHF par téléphone |
+
+## Proposition la plus viable : hôte + smartphones en USB
+
+Pour des téléphones de récupération, c'est l'option qui paraît la plus viable :
+
+- **Compatible avec tous les téléphones** : le port USB existe sur chaque modèle, même ancien, sans adaptateur ni support OTG.
+- **Peu de matériel** : des câbles et des hubs USB, pas d'équipement par téléphone.
+- **Sécurisée** : les téléphones sont sur un réseau privé ; seul l'hôte est exposé.
+- **Gestion centralisée** : l'hôte déploie, surveille et redémarre les téléphones.
+- **Modulaire** : une unité = un hôte et ses téléphones ; on agrandit en ajoutant des unités.
+- **Donne un rôle aux vieux PC**, qui servent d'hôtes.
+- **Déjà testée** sur le prototype.
 
 ```mermaid
 flowchart LR
@@ -15,14 +31,12 @@ flowchart LR
     end
 ```
 
-## Réseau
+Deux façons de faire passer le trafic par le câble USB :
 
-| Option | Avantages | Inconvénients | Verdict |
+| Variante | Avantages | Inconvénients | Statut |
 |---|---|---|---|
-| Wi-Fi | Coût nul | Instable ; environ 20-30 appareils par point d'accès ; téléphones exposés | Tests seulement |
-| Hôte + USB, `adb forward` | Marche sur tout Android ; téléphones isolés ; testé | adb n'est pas un outil de production ; l'hôte est un point de défaillance | **Prototype** |
-| Hôte + USB, modem USB | Vraie interface réseau, sans adb | ⚠️ Probables conflits d'adresses (même sous-réseau sur chaque téléphone) | À tester |
-| USB-Ethernet par téléphone | Switch standard, facile à agrandir | ⚠️ Compatibilité non vérifiée (OTG, pilote) ; environ 20-30 CHF par téléphone | En réserve |
+| **ADB** (`adb forward`) | Marche sur tout Android avec le débogage USB ; rien à configurer sur le téléphone | Outil de développement, pas de production ; redirections à recréer après chaque rebranchement | Testé sur le prototype |
+| **Modem USB** (tethering) | Vraie interface réseau, sans dépendre d'adb | ⚠️ Probables conflits d'adresses (même sous-réseau sur chaque téléphone) ; ⚠️ se désactiverait au redémarrage | À tester |
 
 ## Logiciel sur le téléphone
 
@@ -31,6 +45,8 @@ flowchart LR
 | **Linux natif** (postmarketOS…) | Vrai Linux, outils standard ; correctifs de sécurité à jour | Peu de modèles supportés, souvent partiellement ; flash manuel par téléphone |
 | **Termux** | Gratuit, sans root ; tout langage ; rien à compiler | Installation manuelle par téléphone ; Android peut tuer l'appli ; pas de redémarrage automatique |
 | **Application Android dédiée** | Une APK installée et mise à jour sur tous les téléphones en une commande ; tourne en permanence et redémarre seule ; accès aux API Android sans root | Code à maintenir ; langages et bibliothèques fixés à la compilation |
+
+La proposition la plus viable est l'application dédiée : elle se déploie sur tous les téléphones d'un coup et tourne sans intervention. Termux reste utile pour les tests.
 
 ## Ce que le POC a montré (Galaxy A5 2016, Android 7.0)
 
